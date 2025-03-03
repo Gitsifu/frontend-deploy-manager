@@ -5,8 +5,81 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>原型部署管理系统</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .login-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .hidden {
+      display: none;
+    }
+    .upload-area {
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+      background: #f9f9f9;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .upload-area:hover {
+      border-color: #4CAF50;
+      background: #f0f9f0;
+    }
+
+    .upload-area.dragover {
+      border-color: #4CAF50;
+      background: #e8f5e9;
+    }
+
+    .upload-area input[type="file"] {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-hint {
+      pointer-events: none;
+    }
+
+    .upload-hint p {
+      margin: 5px 0;
+      color: #666;
+    }
+
+    .upload-hint-sub {
+      font-size: 0.8em;
+      color: #999;
+    }
+
+    #deployStatus.uploading {
+      color: #2196F3;
+    }
+
+    #deployStatus.success {
+      color: #4CAF50;
+    }
+
+    #deployStatus.error {
+      color: #f44336;
+    }
+  </style>
 </head>
 <body>
+  <button id="loginBtn" class="login-btn">登录</button>
   <div class="container">
     <header>
       <h1>原型部署管理系统</h1>
@@ -19,12 +92,17 @@
       </div>
     </section>
     
-    <section class="deploy-section">
+    <section class="deploy-section" style="display: none;" id="deploySection">
       <h2>部署新版本</h2>
       <form id="deployForm" enctype="multipart/form-data">
         <div class="form-group">
-          <label for="zipFile">选择前端项目压缩包 (ZIP):</label>
-          <input type="file" id="zipFile" name="zipFile" accept=".zip" required>
+          <div class="upload-area" id="uploadArea">
+            <input type="file" id="zipFile" name="zipFile" accept=".zip" required>
+            <div class="upload-hint">
+              <p>点击或拖拽ZIP文件到此处上传</p>
+              <p class="upload-hint-sub">支持 .zip 格式</p>
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label for="description">版本描述:</label>
@@ -49,5 +127,117 @@
   </div>
   
   <script src="script.js"></script>
+  <script>
+    let isAuthenticated = false;
+
+    // 检查登录状态
+    async function checkAuthStatus() {
+      const response = await fetch('/api/auth-status');
+      const data = await response.json();
+      isAuthenticated = data.isAuthenticated;
+      updateUIBasedOnAuth();
+    }
+
+    // 更新UI显示
+    function updateUIBasedOnAuth() {
+      const deploymentControls = document.querySelectorAll('.deployment-controls');
+      const loginBtn = document.getElementById('loginBtn');
+      const deploySection = document.getElementById('deploySection');
+      
+      loginBtn.textContent = isAuthenticated ? '已登录' : '登录';
+      
+      // 控制部署区域的显示/隐藏
+      deploySection.style.display = isAuthenticated ? 'block' : 'none';
+      
+      // 控制部署历史中的操作按钮
+      deploymentControls.forEach(control => {
+        control.style.display = isAuthenticated ? 'block' : 'none';
+      });
+    }
+
+    // 登录按钮点击事件
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      if (isAuthenticated) return;
+      
+      const password = prompt('请输入密码：');
+      if (!password) return;
+
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ password })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          isAuthenticated = true;
+          alert('登录成功！');
+          updateUIBasedOnAuth();
+        } else {
+          alert('密码错误！');
+        }
+      } catch (error) {
+        alert('登录失败，请重试！');
+      }
+    });
+
+    // 页面加载时检查登录状态
+    checkAuthStatus();
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const uploadArea = document.getElementById('uploadArea');
+      const fileInput = document.getElementById('zipFile');
+      const deployStatus = document.getElementById('deployStatus');
+
+      // 拖拽事件处理
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+      });
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      // 拖拽效果
+      ['dragenter', 'dragover'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, () => {
+          uploadArea.classList.add('dragover');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, () => {
+          uploadArea.classList.remove('dragover');
+        });
+      });
+
+      // 处理文件拖放
+      uploadArea.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+
+        if (files.length > 0) {
+          fileInput.files = files;
+          // 触发 change 事件
+          const event = new Event('change');
+          fileInput.dispatchEvent(event);
+        }
+      });
+
+      // 文件选择变化时更新显示
+      fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+          const fileName = fileInput.files[0].name;
+          deployStatus.textContent = `已选择文件: ${fileName}`;
+          deployStatus.className = '';
+        }
+      });
+    });
+  </script>
 </body>
 </html> 

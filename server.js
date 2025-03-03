@@ -23,6 +23,24 @@ app.use(fileUpload({
 }));
 app.use(express.static('public'));
 
+// 修改密码验证中间件部分
+const PASSWORD = process.env.LOGIN_PASSWORD || 'admin123'; // 使用环境变量中的密码
+let isAuthenticated = false;
+
+app.post('/api/login', (req, res) => {
+  const { password } = req.body;
+  if (password === PASSWORD) {
+    isAuthenticated = true;
+    res.json({ success: true });
+  } else {
+    res.status(401).json({ success: false, message: '密码错误' });
+  }
+});
+
+app.get('/api/auth-status', (req, res) => {
+  res.json({ isAuthenticated });
+});
+
 // 构建完整URL的辅助函数
 function buildUrl(path) {
   // 如果NGINX_PORT是80或443，则不在URL中显示端口

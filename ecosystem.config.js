@@ -8,7 +8,8 @@ module.exports = {
       DEPLOY_BASE_DIR: "/www/wwwroot/192.168.1.127_5911",
       NGINX_HOST: "192.168.1.127",
       NGINX_PORT: "5911",
-      DELETE_PASSWORD: "admin123"
+      DELETE_PASSWORD: "admin123",
+      LOGIN_PASSWORD: "admin123"
     },
     instances: 1,
     autorestart: true,
