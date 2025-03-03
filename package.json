@@ -4,8 +4,7 @@
   "description": "原型部署管理系统",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "node server.js"
   },
   "keywords": [],
   "author": "",

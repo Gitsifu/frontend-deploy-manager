@@ -114,6 +114,7 @@ frontend-deploy-manager/
 | NGINX_HOST | Nginx 服务器 IP 或域名 | 192.168.1.127 |
 | NGINX_PORT | Nginx 服务端口 | 5911 |
 | DELETE_PASSWORD | 删除版本的密码 | admin123 |
+| LOGIN_PASSWORD | 登录密码 | admin123 |
 
 ## 注意事项
 
