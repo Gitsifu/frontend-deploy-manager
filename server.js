@@ -27,6 +27,14 @@ app.use(express.static('public'));
 const PASSWORD = process.env.LOGIN_PASSWORD || 'admin123'; // 使用环境变量中的密码
 let isAuthenticated = false;
 
+// 添加权限验证中间件
+const requireAuth = (req, res, next) => {
+  if (!isAuthenticated) {
+    return res.status(401).json({ error: '未登录或登录已过期，请重新登录' });
+  }
+  next();
+};
+
 app.post('/api/login', (req, res) => {
   const { password } = req.body;
   if (password === PASSWORD) {
@@ -125,7 +133,7 @@ app.get('/api/deployments', (req, res) => {
 });
 
 // 上传并部署新版本
-app.post('/api/deploy', async (req, res) => {
+app.post('/api/deploy', requireAuth, async (req, res) => {
   try {
     if (!req.files || !req.files.zipFile) {
       return res.status(400).json({ error: '没有上传文件' });
@@ -212,7 +220,7 @@ app.post('/api/deploy', async (req, res) => {
 });
 
 // 设置当前版本（创建或更新符号链接）
-app.post('/api/set-current', (req, res) => {
+app.post('/api/set-current', requireAuth, (req, res) => {
   try {
     const { version } = req.body;
     if (!version) {
@@ -243,7 +251,7 @@ app.post('/api/set-current', (req, res) => {
 });
 
 // 删除部署版本
-app.delete('/api/deployments/:version', (req, res) => {
+app.delete('/api/deployments/:version', requireAuth, (req, res) => {
   try {
     const { version } = req.params;
     const { password } = req.body; // 从请求体中获取密码
