@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>原型部署管理系统</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>原型部署管理系统</h1>
+    </header>
+    
+    <section class="current-version-section">
+      <h2>当前活跃版本</h2>
+      <div id="currentVersionInfo">
+        <div class="loading">加载中...</div>
+      </div>
+    </section>
+    
+    <section class="deploy-section">
+      <h2>部署新版本</h2>
+      <form id="deployForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="zipFile">选择前端项目压缩包 (ZIP):</label>
+          <input type="file" id="zipFile" name="zipFile" accept=".zip" required>
+        </div>
+        <div class="form-group">
+          <label for="description">版本描述:</label>
+          <input type="text" id="description" name="description" placeholder="例如：修复登录bug，更新首页设计">
+        </div>
+        <button type="submit" id="deployBtn">部署</button>
+      </form>
+      <div id="deployStatus" class="status-message"></div>
+    </section>
+    
+    <section class="deployments-section">
+      <h2>部署历史</h2>
+      <div class="deployments-header">
+        <div class="refresh-btn">
+          <button id="refreshBtn">刷新列表</button>
+        </div>
+      </div>
+      <div class="deployments-list" id="deploymentsList">
+        <div class="loading">加载中...</div>
+      </div>
+    </section>
+  </div>
+  
+  <script src="script.js"></script>
+</body>
+</html> 
