@@ -17,6 +17,14 @@
       border-radius: 4px;
       cursor: pointer;
     }
+    
+    .login-btn.logged-in {
+      background-color: #f44336;
+    }
+    
+    .login-btn:hover {
+      opacity: 0.9;
+    }
     .hidden {
       display: none;
     }
@@ -144,43 +152,63 @@
       const loginBtn = document.getElementById('loginBtn');
       const deploySection = document.getElementById('deploySection');
       
-      loginBtn.textContent = isAuthenticated ? '已登录' : '登录';
+      loginBtn.textContent = isAuthenticated ? '退出登录' : '登录';
+      loginBtn.className = isAuthenticated ? 'login-btn logged-in' : 'login-btn';
       
       // 控制部署区域的显示/隐藏
       deploySection.style.display = isAuthenticated ? 'block' : 'none';
       
       // 控制部署历史中的操作按钮
       deploymentControls.forEach(control => {
-        control.style.display = isAuthenticated ? 'block' : 'none';
+        control.style.display = isAuthenticated ? 'inline-block' : 'none';
       });
     }
 
     // 登录按钮点击事件
     document.getElementById('loginBtn').addEventListener('click', async () => {
-      if (isAuthenticated) return;
-      
-      const password = prompt('请输入密码：');
-      if (!password) return;
+      if (isAuthenticated) {
+        // 如果已登录，则执行退出操作
+        try {
+          const response = await fetch('/api/logout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          });
 
-      try {
-        const response = await fetch('/api/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ password })
-        });
-
-        const data = await response.json();
-        if (data.success) {
-          isAuthenticated = true;
-          alert('登录成功！');
-          updateUIBasedOnAuth();
-        } else {
-          alert('密码错误！');
+          const data = await response.json();
+          if (data.success) {
+            isAuthenticated = false;
+            updateUIBasedOnAuth();
+          }
+        } catch (error) {
+          alert('退出登录失败，请重试！');
         }
-      } catch (error) {
-        alert('登录失败，请重试！');
+      } else {
+        // 未登录时执行登录操作
+        const password = prompt('请输入密码：');
+        if (!password) return;
+
+        try {
+          const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ password })
+          });
+
+          const data = await response.json();
+          if (data.success) {
+            isAuthenticated = true;
+            alert('登录成功！');
+            updateUIBasedOnAuth();
+          } else {
+            alert('密码错误！');
+          }
+        } catch (error) {
+          alert('登录失败，请重试！');
+        }
       }
     });
 

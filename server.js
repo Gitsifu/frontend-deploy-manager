@@ -41,6 +41,11 @@ app.get('/api/auth-status', (req, res) => {
   res.json({ isAuthenticated });
 });
 
+app.post('/api/logout', (req, res) => {
+  isAuthenticated = false;
+  res.json({ success: true });
+});
+
 // 构建完整URL的辅助函数
 function buildUrl(path) {
   // 如果NGINX_PORT是80或443，则不在URL中显示端口

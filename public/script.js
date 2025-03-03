@@ -152,8 +152,10 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="deployment-description">描述: ${deployment.description || '无'}</div>
           <div class="deployment-actions">
             <button class="btn-view" data-url="${deployment.url}">查看</button>
-            <button class="btn-set-current" data-version="${deployment.version}">设为当前版本</button>
-            <button class="btn-delete" data-version="${deployment.version}">删除</button>
+            <div class="deployment-controls" style="display: inline-block;">
+              <button class="btn-set-current" data-version="${deployment.version}">设为当前版本</button>
+              <button class="btn-delete" data-version="${deployment.version}">删除</button>
+            </div>
           </div>
         </div>
       `;
@@ -176,6 +178,9 @@ document.addEventListener('DOMContentLoaded', function() {
       
       deploymentsList.appendChild(deploymentItem);
     });
+
+    // 根据登录状态更新控制按钮的显示
+    updateUIBasedOnAuth();
   }
   
   // 设置当前版本
