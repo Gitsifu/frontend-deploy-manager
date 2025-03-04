@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
 const moment = require('moment');
+const session = require('express-session'); // 添加 session 支持
 
 // 从环境变量获取配置
 const app = express();
@@ -11,6 +12,17 @@ const PORT = process.env.PORT || 3911;
 const DEPLOY_BASE_DIR = process.env.DEPLOY_BASE_DIR || '/www/wwwroot/192.168.1.127_5911';
 const NGINX_HOST = process.env.NGINX_HOST || '192.168.1.127';
 const NGINX_PORT = process.env.NGINX_PORT || '5911';
+
+// 添加 session 中间件
+app.use(session({
+  secret: 'deploy-manager-secret', // 用于签名会话ID的密钥
+  resave: false, // 不强制保存未修改的会话
+  saveUninitialized: false, // 不保存未初始化的会话
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production', // 在生产环境中使用安全cookie
+    maxAge: 24 * 60 * 60 * 1000 // 会话有效期为24小时
+  }
+}));
 
 // 中间件
 app.use(express.json());
@@ -25,32 +37,34 @@ app.use(express.static('public'));
 
 // 修改密码验证中间件部分
 const PASSWORD = process.env.LOGIN_PASSWORD || 'admin123'; // 使用环境变量中的密码
-let isAuthenticated = false;
 
-// 添加权限验证中间件
+// 修改权限验证中间件，使用 session 而不是全局变量
 const requireAuth = (req, res, next) => {
-  if (!isAuthenticated) {
+  if (!req.session.isAuthenticated) {
     return res.status(401).json({ error: '未登录或登录已过期，请重新登录' });
   }
   next();
 };
 
+// 修改登录接口，使用 session 存储登录状态
 app.post('/api/login', (req, res) => {
   const { password } = req.body;
   if (password === PASSWORD) {
-    isAuthenticated = true;
+    req.session.isAuthenticated = true;
     res.json({ success: true });
   } else {
     res.status(401).json({ success: false, message: '密码错误' });
   }
 });
 
+// 修改登录状态检查接口
 app.get('/api/auth-status', (req, res) => {
-  res.json({ isAuthenticated });
+  res.json({ isAuthenticated: req.session.isAuthenticated || false });
 });
 
+// 修改退出登录接口
 app.post('/api/logout', (req, res) => {
-  isAuthenticated = false;
+  req.session.isAuthenticated = false;
   res.json({ success: true });
 });
 
