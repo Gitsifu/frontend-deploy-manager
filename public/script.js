@@ -33,7 +33,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     fetch('/api/deploy', {
       method: 'POST',
-      body: formData
+      body: formData,
+      credentials: 'same-origin'
     })
     .then(response => response.json())
     .then(data => {
@@ -63,7 +64,9 @@ document.addEventListener('DOMContentLoaded', function() {
   function loadCurrentVersion() {
     currentVersionInfo.innerHTML = '<div class="loading">加载中...</div>';
     
-    fetch('/api/current-version')
+    fetch('/api/current-version', {
+      credentials: 'same-origin'
+    })
       .then(response => response.json())
       .then(data => {
         if (data.success) {
@@ -106,7 +109,9 @@ document.addEventListener('DOMContentLoaded', function() {
   function loadDeployments() {
     deploymentsList.innerHTML = '<div class="loading">加载中...</div>';
     
-    fetch('/api/deployments')
+    fetch('/api/deployments', {
+      credentials: 'same-origin'
+    })
       .then(response => response.json())
       .then(deployments => {
         if (deployments.length === 0) {
@@ -115,7 +120,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // 获取当前版本
-        fetch('/api/current-version')
+        fetch('/api/current-version', {
+          credentials: 'same-origin'
+        })
           .then(response => response.json())
           .then(data => {
             const currentVersion = data.success ? data.version : null;
@@ -194,7 +201,8 @@ document.addEventListener('DOMContentLoaded', function() {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ version })
+      body: JSON.stringify({ version }),
+      credentials: 'same-origin'
     })
     .then(response => response.json())
     .then(data => {
@@ -230,7 +238,8 @@ document.addEventListener('DOMContentLoaded', function() {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ password })
+      body: JSON.stringify({ password }),
+      credentials: 'same-origin'
     })
     .then(response => response.json())
     .then(data => {

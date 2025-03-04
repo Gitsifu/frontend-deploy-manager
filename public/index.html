@@ -140,7 +140,9 @@
 
     // 检查登录状态
     async function checkAuthStatus() {
-      const response = await fetch('/api/auth-status');
+      const response = await fetch('/api/auth-status', {
+        credentials: 'same-origin'
+      });
       const data = await response.json();
       isAuthenticated = data.isAuthenticated;
       updateUIBasedOnAuth();
@@ -173,7 +175,8 @@
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-            }
+            },
+            credentials: 'same-origin'
           });
 
           const data = await response.json();
@@ -195,7 +198,8 @@
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ password })
+            body: JSON.stringify({ password }),
+            credentials: 'same-origin'
           });
 
           const data = await response.json();
