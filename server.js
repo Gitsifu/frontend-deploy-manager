@@ -15,12 +15,14 @@ const NGINX_PORT = process.env.NGINX_PORT || '5911';
 
 // 添加 session 中间件
 app.use(session({
-  secret: 'deploy-manager-secret', // 用于签名会话ID的密钥
-  resave: false, // 不强制保存未修改的会话
-  saveUninitialized: false, // 不保存未初始化的会话
+  secret: 'deploy-manager-secret',
+  resave: true,
+  saveUninitialized: true,
   cookie: { 
-    secure: process.env.NODE_ENV === 'production', // 在生产环境中使用安全cookie
-    maxAge: 24 * 60 * 60 * 1000 // 会话有效期为24小时
+    secure: false,
+    maxAge: 24 * 60 * 60 * 1000,
+    httpOnly: true,
+    sameSite: 'lax'
   }
 }));
 
@@ -35,14 +37,26 @@ app.use(fileUpload({
 }));
 app.use(express.static('public'));
 
+// 添加调试中间件
+app.use((req, res, next) => {
+  console.log('Session ID:', req.sessionID);
+  console.log('Is Authenticated:', req.session.isAuthenticated);
+  next();
+});
+
 // 修改密码验证中间件部分
 const PASSWORD = process.env.LOGIN_PASSWORD || 'admin123'; // 使用环境变量中的密码
 
 // 修改权限验证中间件，使用 session 而不是全局变量
 const requireAuth = (req, res, next) => {
+  console.log('Auth check - Session ID:', req.sessionID);
+  console.log('Auth check - Is Authenticated:', req.session.isAuthenticated);
+  
   if (!req.session.isAuthenticated) {
+    console.log('Authentication failed');
     return res.status(401).json({ error: '未登录或登录已过期，请重新登录' });
   }
+  console.log('Authentication successful');
   next();
 };
 
