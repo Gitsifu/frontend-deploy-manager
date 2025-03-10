@@ -1,6 +1,8 @@
 
 # 原型部署管理系统
 
+!(https://raw.githubusercontent.com/Gitsifu/frontend-deploy-manager/refs/heads/master/demo.jpg)[demo.jpg]
+
 一个简单而强大的前端项目部署管理工具，可以轻松上传、管理和访问不同版本的前端项目。
 
 ## 功能特点
