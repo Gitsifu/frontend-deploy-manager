@@ -118,6 +118,19 @@ frontend-deploy-manager/
 | DELETE_PASSWORD | 删除版本的密码 | admin123 |
 | LOGIN_PASSWORD | 登录密码 | admin123 |
 
+## nginx配置
+
+为避免用户访问当前活跃版本时，由于路径一直一时样的，浏览器缓存问题导致访问的资源不是最新的，请添加如下 `nginx` 相关配置
+
+```nginx.conf
+location /current/ {
+    # 禁止缓存，强制浏览器每次都向服务器请求最新资源
+    add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
+    add_header Pragma "no-cache";
+    add_header Expires "0";
+}
+```
+
 ## 注意事项
 
 1. 确保 Node.js 进程有权限访问和修改 Nginx 的部署目录
